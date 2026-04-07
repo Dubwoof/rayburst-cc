@@ -1,18 +1,24 @@
 ---
 name: rb:init
 description: |
-  Initialize Rayburst project config — set API key, project URL, board, and user credentials.
+  Initialize Rayburst project config — set API key, board, and user credentials.
   Triggers: "rb init", "setup rayburst", "configure rayburst", "connect to rayburst".
 user-invocable: true
 ---
 
 # rb:init — Project Config Setup
 
-Initialize `.claude/rb-config.md` with API connection details, project URL, board selection, and user credentials. The plugin's MCP server and hooks read this file automatically.
+Initialize `.claude/rb-config.md` with API connection details, project selection, board selection, and user credentials. The plugin's MCP server and hooks read this file automatically.
 
 ## MCP Tool Prefix
 
 All MCP tools use: `mcp__plugin_rayburst_rayburst__`
+
+---
+
+## CRITICAL RULE
+
+**Each step below is a separate interaction. You MUST use AskUserQuestion to collect the user's answer and WAIT for their response before moving to the next step. Never combine multiple questions in a single message. Complete one step fully before starting the next.**
 
 ---
 
@@ -22,7 +28,7 @@ All MCP tools use: `mcp__plugin_rayburst_rayburst__`
 
 Attempt to read `.claude/rb-config.md`.
 
-**If the file exists**, show the user its current contents and ask:
+**If the file exists**, show the user its current contents and ask via AskUserQuestion:
 
 ```
 A config file already exists at .claude/rb-config.md.
@@ -31,8 +37,6 @@ What would you like to do?
   overwrite — Replace the entire file with new values
   update    — Keep existing values, edit specific entries
   cancel    — Exit without changes
-
-Reply with: overwrite / update / cancel
 ```
 
 - **cancel** → stop immediately, print "No changes made."
@@ -45,7 +49,7 @@ Reply with: overwrite / update / cancel
 
 ### Step 2: Collect API Key
 
-Ask the user for their Rayburst API key:
+Use AskUserQuestion to ask:
 
 ```
 Rayburst API Key
@@ -54,6 +58,8 @@ Get one at https://www.rayburst.app/profile?tab=mcp-agents
 ```
 
 Validate: non-empty, starts with `rb_`. Store as `api_key`.
+
+**STOP and wait for user response before continuing.**
 
 ---
 
@@ -87,30 +93,15 @@ mcp__plugin_rayburst_rayburst__rb_ping()
 
 ---
 
-### Step 4: Prompt for Project URL
+### Step 4: Select Projects
 
-Ask the user:
-
-```
-Project URL
-Enter the base URL of the running app (e.g. https://dev.myapp.com or http://localhost:3000):
-```
-
-Validate: non-empty, starts with `http://` or `https://`.
-
-Store as `project_url`.
-
----
-
-### Step 5: Select Projects
-
-List available projects in the organization:
+Fetch available projects:
 
 ```
 mcp__plugin_rayburst_rayburst__rb_list_projects()
 ```
 
-Display them numbered and let the user pick one or more:
+Display them as a numbered list, then use AskUserQuestion to ask the user to select. This is a **multi-select** — the user can pick multiple projects by entering comma-separated numbers.
 
 ```
 Available projects:
@@ -119,68 +110,67 @@ Available projects:
   3. Landing Page (c9d0e1f2-...) — manual
 
 Select project(s) for this workspace (comma-separated numbers, or Enter to skip):
-e.g. 1,2
 ```
 
-Store selected project IDs and names as `projects` list. If only one is selected, store it. If multiple, store all.
+Store selected project IDs and names as `projects` list.
+
+**STOP and wait for user response before continuing.**
 
 ---
 
-### Step 6: Select Board
+### Step 5: Select Board
 
-List available boards:
+Fetch available boards:
 
 ```
 mcp__plugin_rayburst_rayburst__rb_list_boards()
 ```
 
-Display them numbered and ask the user to pick:
+Display them as a numbered list, then use AskUserQuestion to ask the user to pick **one** board.
 
 ```
 Available boards:
-  1. Rayburst MVP (23578fa2-...)
-  2. Rayburst Business (e07dae77-...)
+  1. My MVP Board (23578fa2-...)
+  2. My Business Board (e07dae77-...)
 
 Select a board number:
 ```
 
 Store the selected `board_id` and `board_slug`.
 
+**STOP and wait for user response before continuing.**
+
 ---
 
-### Step 7: Collect Users (loop)
+### Step 6: Collect Users (loop)
 
 Initialize an empty `users` list.
 
-**For each user, ask in sequence:**
+**For each user, ask in sequence using AskUserQuestion:**
 
-**7a. Username / email**
-```
-User <N> — Username or email:
-```
+**6a.** Ask: `User <N> — Username or email:`
 
-**7b. Password or env var**
-```
-User <N> — Password (or $ENV_VAR_NAME to reference an env variable):
-```
+**STOP and wait for response.**
+
+**6b.** Ask: `User <N> — Password (or $ENV_VAR_NAME to reference an env variable):`
 
 If input starts with `$`, store as-is. Otherwise store literal.
 
-**7c. Description**
-```
-User <N> — Description (e.g. Admin, Viewer, Editor) [User <N>]:
-```
+**STOP and wait for response.**
 
-**7d. Add another user?**
-```
-Add another user? (yes / no) [no]:
-```
+**6c.** Ask: `User <N> — Description (e.g. Admin, Viewer, Editor) [User <N>]:`
+
+**STOP and wait for response.**
+
+**6d.** Ask: `Add another user? (yes / no) [no]:`
+
+**STOP and wait for response.**
 
 At minimum one user required.
 
 ---
 
-### Step 8: Write Full Config
+### Step 7: Write Full Config
 
 Write the complete `.claude/rb-config.md` (overwriting the minimal one from Step 3):
 
@@ -190,9 +180,6 @@ Write the complete `.claude/rb-config.md` (overwriting the minimal one from Step
 ## API
 - API Key: <api_key>
 - API URL: https://api.rayburst.app/api/v1/mcp
-
-## Project URL
-<project_url>
 
 ## Projects
 - <project_name_1>: <project_id_1>
@@ -214,13 +201,12 @@ Write the complete `.claude/rb-config.md` (overwriting the minimal one from Step
 
 ---
 
-### Step 9: Confirmation Summary
+### Step 8: Confirmation Summary
 
 ```
 Config saved to .claude/rb-config.md
 
   API Key     : <first 12 chars>...
-  Project URL : <project_url>
   Board       : <board_slug> (<board_id>)
   Projects    : <N> project(s) selected
   Users       : <N> user(s) configured
@@ -235,6 +221,6 @@ have your feature atlas and board context. No commands needed — just code.
 
 - **Never resolve env vars at write time** — store `$VAR_NAME` literally
 - **At least one user required**
-- **URL must start with `http://` or `https://`**
 - **`.claude/` directory must exist** — create with `mkdir -p .claude` before writing
 - **Write minimal config before pinging** — the MCP server reads from rb-config.md, not env vars
+- **One question per turn** — never batch multiple prompts in a single message
