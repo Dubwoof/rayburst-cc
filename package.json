@@ -1,6 +1,6 @@
 {
   "name": "@rayburst/cc",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "type": "module",
   "description": "Always-on product context for Claude Code. Automatically injects feature atlas and acceptance criteria into every coding session.",
   "author": {
@@ -33,7 +33,9 @@
     ".mcp.json"
   ],
   "scripts": {
-    "build": "esbuild src/server.ts --bundle --platform=node --target=node18 --format=esm --outfile=server.bundle.mjs --minify",
+    "build": "npm run build:server && npm run build:hooks",
+    "build:server": "esbuild src/server.ts --bundle --platform=node --target=node18 --format=esm --outfile=server.bundle.mjs --minify",
+    "build:hooks": "node scripts/build-hooks.mjs",
     "dev": "npx tsx src/server.ts",
     "typecheck": "tsc --noEmit"
   },

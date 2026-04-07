@@ -1,17 +1,53 @@
 #!/usr/bin/env node
 
-/**
- * PreToolUse hook for the Rayburst plugin.
- *
- * Triggered on Write and Edit tool calls. Reads the active feature
- * from cache and injects a coding reminder with criteria checklist.
- */
+// src/hooks/rb-cache.ts
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+function getProjectDir() {
+  return process.env["CLAUDE_PROJECT_DIR"] || process.env["CONTEXT_MODE_PROJECT_DIR"] || process.cwd();
+}
+function getProjectHash() {
+  return createHash("md5").update(getProjectDir()).digest("hex").slice(0, 12);
+}
+function getCachePath(type) {
+  return `/tmp/rb-${type}-${getProjectHash()}.json`;
+}
+function readCache(type) {
+  try {
+    const path = getCachePath(type);
+    if (!existsSync(path)) return null;
+    const raw = readFileSync(path, "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
 
-import { readCache } from "./rb-cache.mjs";
-import { buildCodingReminderBlock } from "./product-context-block.mjs";
+// src/hooks/product-context-block.ts
+function buildCodingReminderBlock(activeFeature2, filePath2, relatedFeatures2) {
+  if (!activeFeature2) return "";
+  const criteria = (activeFeature2.criteria || []).map((c) => `  - [ ] ${escapeXml(c.title || c.description || "")}`).join("\n");
+  let relatedNote = "";
+  if (relatedFeatures2 && relatedFeatures2.length > 0) {
+    const names = relatedFeatures2.map((f) => `"${escapeXml(f.title)}"`).join(", ");
+    relatedNote = `
+  <related_features>This file may also relate to: ${names}. Check that your changes don't break their criteria.</related_features>`;
+  }
+  return `<rayburst_coding_reminder>
+  <active_feature>${escapeXml(activeFeature2.title)} (${activeFeature2.id})</active_feature>
+  <criteria_checklist>
+${criteria}
+  </criteria_checklist>
+  <file>${escapeXml(filePath2 || "unknown")}</file>${relatedNote}
+  <post_implementation_required>After writing this code, you MUST update Rayburst in the same response: add/update criteria for any new behaviors via rb_add_criterion, update the feature description if it changed via rb_update_feature. Do NOT skip this step.</post_implementation_required>
+</rayburst_coding_reminder>`;
+}
+function escapeXml(str) {
+  return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
 
-// Read stdin for the hook input
-let input = "";
+// src/hooks/pretooluse.ts
+var input = "";
 try {
   const chunks = [];
   for await (const chunk of process.stdin) {
@@ -21,67 +57,48 @@ try {
 } catch {
   process.exit(0);
 }
-
-let hookInput;
+var hookInput;
 try {
   hookInput = JSON.parse(input);
 } catch {
   process.exit(0);
 }
-
-const toolName = hookInput?.input?.tool_name;
-const toolInput = hookInput?.input?.tool_input;
-
-// Only act on Write and Edit
+var toolName = hookInput?.input?.tool_name;
+var toolInput = hookInput?.input?.tool_input;
 if (toolName !== "Write" && toolName !== "Edit") {
   process.exit(0);
 }
-
-// Read active feature from cache
-const activeFeature = readCache("active-feature");
+var activeFeature = readCache("active-feature");
 if (!activeFeature) {
   process.exit(0);
 }
-
-// Get the file path being edited
-const filePath = toolInput?.file_path || toolInput?.path || "";
-
-// Check if other features mention this file path (basic matching)
-const featureList = readCache("features") || [];
-const relatedFeatures = [];
-
+var filePath = toolInput?.file_path || toolInput?.path || "";
+var featureList = readCache("features") || [];
+var relatedFeatures = [];
 if (filePath) {
   const fileBasename = filePath.split("/").pop() || "";
   const fileDir = filePath.split("/").slice(-2, -1)[0] || "";
-
   for (const f of featureList) {
     if (f.id === activeFeature.id) continue;
     const desc = (f.description || "").toLowerCase();
     const title = (f.title || "").toLowerCase();
-    if (
-      desc.includes(fileBasename.toLowerCase()) ||
-      desc.includes(fileDir.toLowerCase()) ||
-      title.includes(fileBasename.toLowerCase().replace(/\.\w+$/, ""))
-    ) {
+    if (desc.includes(fileBasename.toLowerCase()) || desc.includes(fileDir.toLowerCase()) || title.includes(fileBasename.toLowerCase().replace(/\.\w+$/, ""))) {
       relatedFeatures.push(f);
     }
   }
 }
-
-// Build and inject the Coding Reminder Block
-const contextBlock = buildCodingReminderBlock(
+var contextBlock = buildCodingReminderBlock(
   activeFeature,
   filePath,
   relatedFeatures.slice(0, 3)
 );
-
 if (contextBlock) {
   console.log(
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
-        additionalContext: contextBlock,
-      },
+        additionalContext: contextBlock
+      }
     })
   );
 }

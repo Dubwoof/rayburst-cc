@@ -6,39 +6,40 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
+import type { Feature, RayburstConfig } from "./types.js";
 
 // ── Project dir & hashing ──
 
-export function getProjectDir() {
+export function getProjectDir(): string {
   return (
-    process.env.CLAUDE_PROJECT_DIR ||
-    process.env.CONTEXT_MODE_PROJECT_DIR ||
+    process.env["CLAUDE_PROJECT_DIR"] ||
+    process.env["CONTEXT_MODE_PROJECT_DIR"] ||
     process.cwd()
   );
 }
 
-export function getProjectHash() {
+export function getProjectHash(): string {
   return createHash("md5").update(getProjectDir()).digest("hex").slice(0, 12);
 }
 
 // ── Cache paths ──
 
-export function getCachePath(type) {
+export function getCachePath(type: string): string {
   return `/tmp/rb-${type}-${getProjectHash()}.json`;
 }
 
-export function readCache(type) {
+export function readCache<T>(type: string): T | null {
   try {
     const path = getCachePath(type);
     if (!existsSync(path)) return null;
     const raw = readFileSync(path, "utf-8");
-    return JSON.parse(raw);
+    return JSON.parse(raw) as T;
   } catch {
     return null;
   }
 }
 
-export function writeCache(type, data) {
+export function writeCache(type: string, data: unknown): void {
   try {
     const path = getCachePath(type);
     writeFileSync(path, JSON.stringify(data), "utf-8");
@@ -49,7 +50,7 @@ export function writeCache(type, data) {
 
 // ── Config parsing ──
 
-export function readConfig() {
+export function readConfig(): RayburstConfig | null {
   const projectDir = getProjectDir();
   const configPath = resolve(projectDir, ".claude", "rb-config.md");
 
@@ -57,15 +58,17 @@ export function readConfig() {
 
   const content = readFileSync(configPath, "utf-8");
 
-  function parseField(section, key) {
+  function parseField(section: string, key: string | null): string | null {
     const sectionMatch = content.match(
       new RegExp(`## ${section}[\\s\\S]*?(?=\\n## |$)`)
     );
     if (!sectionMatch) return null;
-    const lineMatch = sectionMatch[0].match(
-      new RegExp(`-\\s*${key}:\\s*(.+)`, "i")
-    );
-    if (lineMatch) return lineMatch[1].trim();
+    if (key) {
+      const lineMatch = sectionMatch[0].match(
+        new RegExp(`-\\s*${key}:\\s*(.+)`, "i")
+      );
+      if (lineMatch) return lineMatch[1].trim();
+    }
     // Fallback: section content on next line (for Project URL)
     const lines = sectionMatch[0]
       .split("\n")
@@ -74,27 +77,29 @@ export function readConfig() {
   }
 
   // Read API key: env var takes priority, then config file
-  const apiKey = process.env.RAYBURST_API_KEY || parseField("API", "API Key");
+  const apiKey = process.env["RAYBURST_API_KEY"] || parseField("API", "API Key");
   const apiUrl =
-    process.env.RAYBURST_API_URL ||
+    process.env["RAYBURST_API_URL"] ||
     parseField("API", "API URL") ||
     "https://api.rayburst.app/api/v1/mcp";
-  const agentId = process.env.RAYBURST_AGENT_ID;
+  const agentId = process.env["RAYBURST_AGENT_ID"];
   const boardId = parseField("Board", "ID");
   const boardSlug = parseField("Board", "Slug");
   const frontendProjectId = parseField("Projects", "Frontend");
   const backendProjectId = parseField("Projects", "Backend");
   const projectUrl = parseField("Project URL", null);
 
+  if (!apiKey) return null;
+
   return {
     apiKey,
-    apiUrl,
-    agentId,
-    boardId,
-    boardSlug,
-    frontendProjectId,
-    backendProjectId,
-    projectUrl,
+    apiUrl: apiUrl!,
+    agentId: agentId || undefined,
+    boardId: boardId || undefined,
+    boardSlug: boardSlug || undefined,
+    frontendProjectId: frontendProjectId || undefined,
+    backendProjectId: backendProjectId || undefined,
+    projectUrl: projectUrl || undefined,
   };
 }
 
@@ -102,8 +107,12 @@ export function readConfig() {
 
 let requestId = 0;
 
-export async function mcpCall(config, toolName, args = {}) {
-  const headers = {
+export async function mcpCall(
+  config: RayburstConfig,
+  toolName: string,
+  args: Record<string, unknown> = {}
+): Promise<unknown> {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json, text/event-stream",
     Authorization: `Bearer ${config.apiKey}`,
@@ -133,20 +142,20 @@ export async function mcpCall(config, toolName, args = {}) {
     if (contentType.includes("text/event-stream")) {
       const text = await res.text();
       const lines = text.split("\n");
-      let lastData = null;
+      let lastData: string | null = null;
       for (const line of lines) {
         if (line.startsWith("data: ")) lastData = line.slice(6);
       }
       if (!lastData) return null;
       try {
-        const parsed = JSON.parse(lastData);
+        const parsed = JSON.parse(lastData) as { result?: unknown };
         return parsed.result ?? parsed;
       } catch {
         return null;
       }
     }
 
-    const json = await res.json();
+    const json = await res.json() as { result?: unknown };
     return json.result ?? json;
   } catch {
     clearTimeout(timeout);
@@ -154,10 +163,11 @@ export async function mcpCall(config, toolName, args = {}) {
   }
 }
 
-export function extractData(result) {
+export function extractData(result: unknown): unknown {
   if (!result) return null;
-  if (result.content && Array.isArray(result.content)) {
-    const textItem = result.content.find((c) => c.type === "text");
+  const r = result as { content?: Array<{ type: string; text: string }> };
+  if (r.content && Array.isArray(r.content)) {
+    const textItem = r.content.find((c) => c.type === "text");
     if (textItem) {
       try {
         return JSON.parse(textItem.text);
@@ -188,7 +198,7 @@ const STOP_WORDS = new Set([
   "change", "modify", "please", "need", "want", "let", "get",
 ]);
 
-function tokenize(text) {
+function tokenize(text: string): string[] {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, " ")
@@ -200,7 +210,7 @@ function tokenize(text) {
  * Match a user prompt against a list of features.
  * Returns matched features sorted by score, or empty array.
  */
-export function matchFeatures(prompt, features) {
+export function matchFeatures(prompt: string, features: Feature[]): Feature[] {
   if (!prompt || !features || features.length === 0) return [];
 
   const promptTokens = tokenize(prompt);
@@ -209,7 +219,7 @@ export function matchFeatures(prompt, features) {
   const promptSet = new Set(promptTokens);
   const promptLower = prompt.toLowerCase();
 
-  const scored = [];
+  const scored: Array<{ feature: Feature; score: number }> = [];
 
   for (const feature of features) {
     const titleTokens = tokenize(feature.title || "");
@@ -239,8 +249,8 @@ export function matchFeatures(prompt, features) {
   // Sort by score desc, prefer active features on tie
   scored.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    const statusOrder = { active: 0, draft: 1, completed: 2, archived: 3 };
-    return (statusOrder[a.feature.status] ?? 9) - (statusOrder[b.feature.status] ?? 9);
+    const statusOrder: Record<string, number> = { active: 0, draft: 1, completed: 2, archived: 3 };
+    return (statusOrder[a.feature.status ?? ""] ?? 9) - (statusOrder[b.feature.status ?? ""] ?? 9);
   });
 
   return scored.slice(0, 3).map((s) => s.feature);
