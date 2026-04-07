@@ -1,0 +1,32 @@
+{
+  "name": "rayburst",
+  "owner": {
+    "name": "Rayburst",
+    "email": "hello@rayburst.app"
+  },
+  "metadata": {
+    "description": "Always-on product context for Claude Code — features, acceptance criteria, and board cards injected automatically.",
+    "version": "3.0.3"
+  },
+  "plugins": [
+    {
+      "name": "rayburst",
+      "source": "./",
+      "description": "Always-on product context for Claude Code. Automatically injects your Rayburst Product Requirement Registry (features, Gherkin acceptance criteria, board cards) into every coding session.",
+      "version": "3.0.3",
+      "author": {
+        "name": "Rayburst"
+      },
+      "category": "development",
+      "keywords": [
+        "mcp",
+        "product-management",
+        "feature-tracking",
+        "acceptance-criteria",
+        "board",
+        "qa-validation",
+        "gherkin"
+      ]
+    }
+  ]
+}
