@@ -136,9 +136,9 @@ Display them numbered and let the user pick one or more:
 
 ```
 Available projects:
-  1. Rayburst Frontend (231165df-...) — local
-  2. Rayburst API (7805dae1-...) — github
-  3. Marketing Site (a1b2c3d4-...) — manual
+  1. My App Frontend (a1b2c3d4-...) — local
+  2. My App API (e5f6a7b8-...) — github
+  3. Landing Page (c9d0e1f2-...) — manual
 
 Select project(s) for this workspace (comma-separated numbers, or Enter to skip):
 e.g. 1,2
