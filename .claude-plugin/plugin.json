@@ -1,0 +1,29 @@
+{
+  "name": "rayburst",
+  "version": "3.0.0",
+  "description": "Always-on product context for Claude Code. Automatically injects feature atlas and acceptance criteria into every coding session — no slash commands needed.",
+  "author": {
+    "name": "Rayburst",
+    "email": "hello@rayburst.app"
+  },
+  "homepage": "https://rayburst.app",
+  "repository": "https://github.com/Dubwoof/rayburst-cc",
+  "license": "MIT",
+  "keywords": [
+    "product-management",
+    "feature-tracking",
+    "qa-validation",
+    "acceptance-criteria",
+    "mcp",
+    "board",
+    "playwright",
+    "browser-testing"
+  ],
+  "mcpServers": {
+    "rayburst": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/start.mjs"]
+    }
+  },
+  "skills": "./skills/"
+}
