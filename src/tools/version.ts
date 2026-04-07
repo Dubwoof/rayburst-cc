@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-const CURRENT_VERSION = "3.1.8";
+const CURRENT_VERSION = "3.1.9";
 const NPM_PACKAGE = "@rayburst/cc";
 
 export function registerVersionTools(server: McpServer) {

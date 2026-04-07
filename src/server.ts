@@ -13,7 +13,7 @@ import { registerVersionTools } from "./tools/version.js";
 
 const server = new McpServer({
   name: "rayburst",
-  version: "3.1.8",
+  version: "3.1.9",
 });
 
 // Proxy that creates a fresh client on every property access.

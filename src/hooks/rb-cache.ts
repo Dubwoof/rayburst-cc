@@ -239,9 +239,19 @@ export function matchFeatures(prompt: string, features: Feature[]): Feature[] {
       phraseBonus = 0.5;
     }
 
-    const score = overlap / promptSet.size + phraseBonus;
+    // Bonus: title-word coverage — if all title tokens appear in prompt, strong match
+    // This ensures short feature titles (e.g. "Browse Screen") always match when
+    // both words appear in a long prompt, regardless of prompt token count
+    const titleCoverage = titleTokens.length > 0
+      ? titleTokens.filter((t) => promptSet.has(t)).length / titleTokens.length
+      : 0;
+    let titleBonus = 0;
+    if (titleCoverage >= 1.0) titleBonus = 0.5;
+    else if (titleCoverage >= 0.8) titleBonus = 0.3;
 
-    if (score >= 0.25) {
+    const score = overlap / promptSet.size + phraseBonus + titleBonus;
+
+    if (score >= 0.15) {
       scored.push({ feature, score });
     }
   }

@@ -279,8 +279,12 @@ function matchFeatures(prompt2, features) {
     if (promptLower.includes(titleLower) || titleLower.includes(promptLower)) {
       phraseBonus = 0.5;
     }
-    const score = overlap / promptSet.size + phraseBonus;
-    if (score >= 0.25) {
+    const titleCoverage = titleTokens.length > 0 ? titleTokens.filter((t) => promptSet.has(t)).length / titleTokens.length : 0;
+    let titleBonus = 0;
+    if (titleCoverage >= 1) titleBonus = 0.5;
+    else if (titleCoverage >= 0.8) titleBonus = 0.3;
+    const score = overlap / promptSet.size + phraseBonus + titleBonus;
+    if (score >= 0.15) {
       scored.push({ feature, score });
     }
   }
