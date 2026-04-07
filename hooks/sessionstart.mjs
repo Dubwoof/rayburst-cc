@@ -183,6 +183,17 @@ ${cardLines}
   </board>
 </rayburst_product_context>`;
 }
+function buildEmptyAtlasBlock() {
+  return `<rayburst_empty_atlas>
+  <warning>The Rayburst feature atlas is EMPTY \u2014 no product features have been defined yet.</warning>
+  <required_action>You MUST NOT write or edit any code this session until you have created at least one feature in the atlas.
+    1. Ask the user what feature or behavior you are about to implement
+    2. Call rb_create_feature to register it (with user confirmation first)
+    3. Add acceptance criteria via rb_add_criterion
+    4. Only then proceed with implementation
+  This applies to ALL changes \u2014 bug fixes, refactors, visual tweaks, and new features alike. There are no exceptions.</required_action>
+</rayburst_empty_atlas>`;
+}
 function escapeXml(str) {
   return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
@@ -209,11 +220,12 @@ try {
   const cardList = Array.isArray(cards) ? cards : cards?.data ?? [];
   writeCache("features", featureList);
   const contextBlock = buildProductContextBlock(featureList, cardList);
+  const emptyAtlasBlock = featureList.length === 0 ? "\n" + buildEmptyAtlasBlock() : "";
   console.log(
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "SessionStart",
-        additionalContext: contextBlock
+        additionalContext: contextBlock + emptyAtlasBlock
       }
     })
   );

@@ -146,6 +146,22 @@ export function buildNoFeatureWarningBlock(filePath: string): string {
 </rayburst_no_feature_warning>`;
 }
 
+/**
+ * Build a block injected at session start when the atlas is empty.
+ * Makes it explicit that features must be created before any coding begins.
+ */
+export function buildEmptyAtlasBlock(): string {
+  return `<rayburst_empty_atlas>
+  <warning>The Rayburst feature atlas is EMPTY — no product features have been defined yet.</warning>
+  <required_action>You MUST NOT write or edit any code this session until you have created at least one feature in the atlas.
+    1. Ask the user what feature or behavior you are about to implement
+    2. Call rb_create_feature to register it (with user confirmation first)
+    3. Add acceptance criteria via rb_add_criterion
+    4. Only then proceed with implementation
+  This applies to ALL changes — bug fixes, refactors, visual tweaks, and new features alike. There are no exceptions.</required_action>
+</rayburst_empty_atlas>`;
+}
+
 function escapeXml(str: string): string {
   return (str || "")
     .replace(/&/g, "&amp;")

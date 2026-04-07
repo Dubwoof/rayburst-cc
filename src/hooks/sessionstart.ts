@@ -7,7 +7,7 @@
  */
 
 import { readConfig, mcpCall, extractData, writeCache } from "./rb-cache.js";
-import { buildProductContextBlock } from "./product-context-block.js";
+import { buildProductContextBlock, buildEmptyAtlasBlock } from "./product-context-block.js";
 import type { Feature, Card } from "./types.js";
 
 const config = readConfig();
@@ -46,12 +46,16 @@ try {
   // Build and inject the Product Context Block
   const contextBlock = buildProductContextBlock(featureList, cardList);
 
+  // When the atlas is empty, append an explicit block so the assistant
+  // knows it must create features before touching any code.
+  const emptyAtlasBlock = featureList.length === 0 ? "\n" + buildEmptyAtlasBlock() : "";
+
   // Output as JSON for Claude Code hook system
   console.log(
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "SessionStart",
-        additionalContext: contextBlock,
+        additionalContext: contextBlock + emptyAtlasBlock,
       },
     })
   );

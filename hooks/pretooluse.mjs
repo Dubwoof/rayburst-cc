@@ -80,7 +80,6 @@ if (toolName !== "Write" && toolName !== "Edit") {
 }
 var activeFeature = readCache("active-feature");
 var filePath = toolInput?.file_path || toolInput?.path || "";
-var contextBlock;
 if (activeFeature) {
   const featureList = readCache("features") || [];
   const relatedFeatures = [];
@@ -96,21 +95,28 @@ if (activeFeature) {
       }
     }
   }
-  contextBlock = buildCodingReminderBlock(
+  const contextBlock = buildCodingReminderBlock(
     activeFeature,
     filePath,
     relatedFeatures.slice(0, 3)
   );
+  if (contextBlock) {
+    console.log(
+      JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          additionalContext: contextBlock
+        }
+      })
+    );
+  }
 } else {
-  contextBlock = buildNoFeatureWarningBlock(filePath);
-}
-if (contextBlock) {
+  const reason = buildNoFeatureWarningBlock(filePath);
   console.log(
     JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: "PreToolUse",
-        additionalContext: contextBlock
-      }
+      decision: "block",
+      reason
     })
   );
+  process.exit(0);
 }

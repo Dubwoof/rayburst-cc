@@ -40,8 +40,6 @@ if (toolName !== "Write" && toolName !== "Edit") {
 const activeFeature = readCache<Feature>("active-feature");
 const filePath = toolInput?.file_path || toolInput?.path || "";
 
-let contextBlock: string;
-
 if (activeFeature) {
   // Check if other features mention this file path (basic matching)
   const featureList = readCache<Feature[]>("features") || [];
@@ -65,24 +63,32 @@ if (activeFeature) {
     }
   }
 
-  // Build and inject the Coding Reminder Block
-  contextBlock = buildCodingReminderBlock(
+  // Inject the Coding Reminder Block as additionalContext
+  const contextBlock = buildCodingReminderBlock(
     activeFeature,
     filePath,
     relatedFeatures.slice(0, 3)
   );
+  if (contextBlock) {
+    console.log(
+      JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          additionalContext: contextBlock,
+        },
+      })
+    );
+  }
 } else {
-  // No active feature matched — warn that feature lookup was skipped
-  contextBlock = buildNoFeatureWarningBlock(filePath);
-}
-
-if (contextBlock) {
+  // No active feature matched — hard block the write until the user
+  // confirms a feature. A warning-only response is not sufficient because
+  // the assistant can choose to ignore it; a block forces resolution.
+  const reason = buildNoFeatureWarningBlock(filePath);
   console.log(
     JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: "PreToolUse",
-        additionalContext: contextBlock,
-      },
+      decision: "block",
+      reason,
     })
   );
+  process.exit(0);
 }
