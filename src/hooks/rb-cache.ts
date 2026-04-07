@@ -85,9 +85,26 @@ export function readConfig(): RayburstConfig | null {
   const agentId = process.env["RAYBURST_AGENT_ID"];
   const boardId = parseField("Board", "ID");
   const boardSlug = parseField("Board", "Slug");
+  // Parse project IDs — supports both legacy (Frontend:/Backend:) and new dynamic format
   const frontendProjectId = parseField("Projects", "Frontend");
   const backendProjectId = parseField("Projects", "Backend");
   const projectUrl = parseField("Project URL", null);
+
+  // Parse all project IDs from the Projects section (new dynamic format)
+  const projectIds: string[] = [];
+  const projectsSection = content.match(/## Projects[\s\S]*?(?=\n## |$)/);
+  if (projectsSection) {
+    const projectLines = projectsSection[0].split("\n").filter((l) => l.trim().startsWith("-"));
+    for (const line of projectLines) {
+      const match = line.match(/-\s*(?:.+?):\s*([a-f0-9-]{36})/i);
+      if (match) projectIds.push(match[1]);
+    }
+  }
+  // Fall back to legacy fields if no dynamic IDs found
+  if (projectIds.length === 0) {
+    if (frontendProjectId) projectIds.push(frontendProjectId);
+    if (backendProjectId) projectIds.push(backendProjectId);
+  }
 
   if (!apiKey) return null;
 
@@ -97,8 +114,9 @@ export function readConfig(): RayburstConfig | null {
     agentId: agentId || undefined,
     boardId: boardId || undefined,
     boardSlug: boardSlug || undefined,
-    frontendProjectId: frontendProjectId || undefined,
-    backendProjectId: backendProjectId || undefined,
+    frontendProjectId: frontendProjectId || projectIds[0] || undefined,
+    backendProjectId: backendProjectId || projectIds[1] || undefined,
+    projectIds,
     projectUrl: projectUrl || undefined,
   };
 }

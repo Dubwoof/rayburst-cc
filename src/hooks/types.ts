@@ -33,5 +33,6 @@ export interface RayburstConfig {
   boardSlug?: string;
   frontendProjectId?: string;
   backendProjectId?: string;
+  projectIds: string[];
   projectUrl?: string;
 }

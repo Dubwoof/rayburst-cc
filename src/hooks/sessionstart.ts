@@ -20,7 +20,10 @@ if (!config || !config.apiKey) {
 try {
   // Fetch features and cards in parallel
   const [featuresRaw, cardsRaw] = await Promise.all([
-    mcpCall(config, "list_features", { limit: 100 }),
+    mcpCall(config, "list_features", {
+      limit: 100,
+      ...(config.frontendProjectId ? { projectId: config.frontendProjectId } : {}),
+    }),
     config.boardId
       ? mcpCall(config, "list_cards", { boardId: config.boardId })
       : Promise.resolve(null),

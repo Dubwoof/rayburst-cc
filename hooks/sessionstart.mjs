@@ -47,6 +47,19 @@ function readConfig() {
   const frontendProjectId = parseField("Projects", "Frontend");
   const backendProjectId = parseField("Projects", "Backend");
   const projectUrl = parseField("Project URL", null);
+  const projectIds = [];
+  const projectsSection = content.match(/## Projects[\s\S]*?(?=\n## |$)/);
+  if (projectsSection) {
+    const projectLines = projectsSection[0].split("\n").filter((l) => l.trim().startsWith("-"));
+    for (const line of projectLines) {
+      const match = line.match(/-\s*(?:.+?):\s*([a-f0-9-]{36})/i);
+      if (match) projectIds.push(match[1]);
+    }
+  }
+  if (projectIds.length === 0) {
+    if (frontendProjectId) projectIds.push(frontendProjectId);
+    if (backendProjectId) projectIds.push(backendProjectId);
+  }
   if (!apiKey) return null;
   return {
     apiKey,
@@ -54,8 +67,9 @@ function readConfig() {
     agentId: agentId || void 0,
     boardId: boardId || void 0,
     boardSlug: boardSlug || void 0,
-    frontendProjectId: frontendProjectId || void 0,
-    backendProjectId: backendProjectId || void 0,
+    frontendProjectId: frontendProjectId || projectIds[0] || void 0,
+    backendProjectId: backendProjectId || projectIds[1] || void 0,
+    projectIds,
     projectUrl: projectUrl || void 0
   };
 }
@@ -180,7 +194,10 @@ if (!config || !config.apiKey) {
 }
 try {
   const [featuresRaw, cardsRaw] = await Promise.all([
-    mcpCall(config, "list_features", { limit: 100 }),
+    mcpCall(config, "list_features", {
+      limit: 100,
+      ...config.frontendProjectId ? { projectId: config.frontendProjectId } : {}
+    }),
     config.boardId ? mcpCall(config, "list_cards", { boardId: config.boardId }) : Promise.resolve(null)
   ]);
   const features = extractData(featuresRaw);
