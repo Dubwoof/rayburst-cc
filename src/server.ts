@@ -9,10 +9,11 @@ import { registerLinkTools } from "./tools/links.js";
 import { registerValidationTools } from "./tools/validation.js";
 import { registerTagTools } from "./tools/tags.js";
 import { registerCommentTools } from "./tools/comments.js";
+import { registerVersionTools } from "./tools/version.js";
 
 const server = new McpServer({
   name: "rayburst",
-  version: "3.1.7",
+  version: "3.1.8",
 });
 
 // Proxy that creates a fresh client on every property access.
@@ -33,6 +34,7 @@ registerLinkTools(server, lazyClient);
 registerValidationTools(server, lazyClient);
 registerTagTools(server, lazyClient);
 registerCommentTools(server, lazyClient);
+registerVersionTools(server);
 
 // Graceful shutdown
 const cleanup = async () => {
