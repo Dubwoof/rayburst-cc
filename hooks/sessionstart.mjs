@@ -153,11 +153,10 @@ function buildProductContextBlock(features, cards) {
   return `<rayburst_product_context>
   <rules>
     <rule>You have access to a Rayburst feature atlas \u2014 a knowledge graph of product features with Gherkin acceptance criteria. Use it to understand what you're building.</rule>
-    <rule>Before implementing any task, check if a matching feature exists in the atlas below. If found, read its criteria with rb_get_feature and work against them.</rule>
+    <rule>MANDATORY PRE-IMPLEMENTATION STEP: Before writing ANY code \u2014 regardless of task size, type, or complexity (including visual changes, icon swaps, layout tweaks, styling, refactoring) \u2014 you MUST: (1) call rb_list_features to search for a matching feature, (2) call rb_get_feature to load its criteria, (3) work against those criteria. There are NO exceptions. If no feature exists, create one with rb_create_feature before proceeding.</rule>
     <rule>If your changes may affect behaviors described in OTHER features' criteria, flag this to the user before proceeding.</rule>
     <rule>NEVER create, update, or delete features or criteria in the atlas without explicitly asking the user for confirmation first. Show them what you want to change and wait for approval.</rule>
-    <rule>When implementation is complete, summarize which acceptance criteria were addressed and which remain pending.</rule>
-    <rule>MANDATORY: After every implementation \u2014 in the same response as the code changes \u2014 you MUST update Rayburst without being asked: (1) update affected feature descriptions if behavior changed via rb_update_feature, (2) add new acceptance criteria for every new behavior introduced via rb_add_criterion, (3) update criterion status where applicable via rb_update_criterion. Do NOT wait for the user to ask. Skipping this step is a workflow violation.</rule>
+    <rule>MANDATORY POST-IMPLEMENTATION STEP: After every implementation \u2014 in the same response as the code changes \u2014 you MUST update Rayburst without being asked: (1) update affected feature descriptions if behavior changed via rb_update_feature, (2) add new acceptance criteria for every new behavior introduced via rb_add_criterion, (3) update criterion status where applicable via rb_update_criterion. Do NOT wait for the user to ask. A post-write hook will verify compliance.</rule>
     <rule>Use mcp__plugin_rayburst_rayburst__rb_* MCP tools to interact with the atlas. Use rb_get_feature to load full criteria for a specific feature.</rule>
   </rules>
 

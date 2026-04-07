@@ -6,7 +6,7 @@
  */
 
 import { readCache } from "./rb-cache.js";
-import { buildCodingReminderBlock } from "./product-context-block.js";
+import { buildCodingReminderBlock, buildNoFeatureWarningBlock } from "./product-context-block.js";
 import type { Feature } from "./types.js";
 
 // Read stdin for the hook input
@@ -38,41 +38,43 @@ if (toolName !== "Write" && toolName !== "Edit") {
 
 // Read active feature from cache
 const activeFeature = readCache<Feature>("active-feature");
-if (!activeFeature) {
-  process.exit(0);
-}
-
-// Get the file path being edited
 const filePath = toolInput?.file_path || toolInput?.path || "";
 
-// Check if other features mention this file path (basic matching)
-const featureList = readCache<Feature[]>("features") || [];
-const relatedFeatures: Feature[] = [];
+let contextBlock: string;
 
-if (filePath) {
-  const fileBasename = filePath.split("/").pop() || "";
-  const fileDir = filePath.split("/").slice(-2, -1)[0] || "";
+if (activeFeature) {
+  // Check if other features mention this file path (basic matching)
+  const featureList = readCache<Feature[]>("features") || [];
+  const relatedFeatures: Feature[] = [];
 
-  for (const f of featureList) {
-    if (f.id === activeFeature.id) continue;
-    const desc = (f.description || "").toLowerCase();
-    const title = (f.title || "").toLowerCase();
-    if (
-      desc.includes(fileBasename.toLowerCase()) ||
-      desc.includes(fileDir.toLowerCase()) ||
-      title.includes(fileBasename.toLowerCase().replace(/\.\w+$/, ""))
-    ) {
-      relatedFeatures.push(f);
+  if (filePath) {
+    const fileBasename = filePath.split("/").pop() || "";
+    const fileDir = filePath.split("/").slice(-2, -1)[0] || "";
+
+    for (const f of featureList) {
+      if (f.id === activeFeature.id) continue;
+      const desc = (f.description || "").toLowerCase();
+      const title = (f.title || "").toLowerCase();
+      if (
+        desc.includes(fileBasename.toLowerCase()) ||
+        desc.includes(fileDir.toLowerCase()) ||
+        title.includes(fileBasename.toLowerCase().replace(/\.\w+$/, ""))
+      ) {
+        relatedFeatures.push(f);
+      }
     }
   }
-}
 
-// Build and inject the Coding Reminder Block
-const contextBlock = buildCodingReminderBlock(
-  activeFeature,
-  filePath,
-  relatedFeatures.slice(0, 3)
-);
+  // Build and inject the Coding Reminder Block
+  contextBlock = buildCodingReminderBlock(
+    activeFeature,
+    filePath,
+    relatedFeatures.slice(0, 3)
+  );
+} else {
+  // No active feature matched — warn that feature lookup was skipped
+  contextBlock = buildNoFeatureWarningBlock(filePath);
+}
 
 if (contextBlock) {
   console.log(

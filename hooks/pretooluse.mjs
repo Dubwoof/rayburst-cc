@@ -24,12 +24,12 @@ function readCache(type) {
 }
 
 // src/hooks/product-context-block.ts
-function buildCodingReminderBlock(activeFeature2, filePath2, relatedFeatures2) {
+function buildCodingReminderBlock(activeFeature2, filePath2, relatedFeatures) {
   if (!activeFeature2) return "";
   const criteria = (activeFeature2.criteria || []).map((c) => `  - [ ] ${escapeXml(c.title || c.description || "")}`).join("\n");
   let relatedNote = "";
-  if (relatedFeatures2 && relatedFeatures2.length > 0) {
-    const names = relatedFeatures2.map((f) => `"${escapeXml(f.title)}"`).join(", ");
+  if (relatedFeatures && relatedFeatures.length > 0) {
+    const names = relatedFeatures.map((f) => `"${escapeXml(f.title)}"`).join(", ");
     relatedNote = `
   <related_features>This file may also relate to: ${names}. Check that your changes don't break their criteria.</related_features>`;
   }
@@ -41,6 +41,16 @@ ${criteria}
   <file>${escapeXml(filePath2 || "unknown")}</file>${relatedNote}
   <post_implementation_required>Before submitting your response, you MUST update the Rayburst feature atlas: add/update criteria for any new behaviors via rb_add_criterion, update the feature description if it changed via rb_update_feature. You will be reminded again after writing. Do NOT skip this step.</post_implementation_required>
 </rayburst_coding_reminder>`;
+}
+function buildNoFeatureWarningBlock(filePath2) {
+  return `<rayburst_no_feature_warning>
+  <warning>You are about to modify ${escapeXml(filePath2 || "a file")} but NO feature from the Rayburst atlas was matched to your current task. This means you skipped the mandatory feature lookup step.</warning>
+  <required_action>BEFORE writing this code, you MUST:
+    1. Call rb_list_features with a search term related to the area you are changing
+    2. Call rb_get_feature on the best match to load its acceptance criteria
+    3. Work against those criteria
+  ALL changes \u2014 including visual, layout, icon, and styling changes \u2014 require a feature lookup. There are no exceptions.</required_action>
+</rayburst_no_feature_warning>`;
 }
 function escapeXml(str) {
   return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -69,29 +79,31 @@ if (toolName !== "Write" && toolName !== "Edit") {
   process.exit(0);
 }
 var activeFeature = readCache("active-feature");
-if (!activeFeature) {
-  process.exit(0);
-}
 var filePath = toolInput?.file_path || toolInput?.path || "";
-var featureList = readCache("features") || [];
-var relatedFeatures = [];
-if (filePath) {
-  const fileBasename = filePath.split("/").pop() || "";
-  const fileDir = filePath.split("/").slice(-2, -1)[0] || "";
-  for (const f of featureList) {
-    if (f.id === activeFeature.id) continue;
-    const desc = (f.description || "").toLowerCase();
-    const title = (f.title || "").toLowerCase();
-    if (desc.includes(fileBasename.toLowerCase()) || desc.includes(fileDir.toLowerCase()) || title.includes(fileBasename.toLowerCase().replace(/\.\w+$/, ""))) {
-      relatedFeatures.push(f);
+var contextBlock;
+if (activeFeature) {
+  const featureList = readCache("features") || [];
+  const relatedFeatures = [];
+  if (filePath) {
+    const fileBasename = filePath.split("/").pop() || "";
+    const fileDir = filePath.split("/").slice(-2, -1)[0] || "";
+    for (const f of featureList) {
+      if (f.id === activeFeature.id) continue;
+      const desc = (f.description || "").toLowerCase();
+      const title = (f.title || "").toLowerCase();
+      if (desc.includes(fileBasename.toLowerCase()) || desc.includes(fileDir.toLowerCase()) || title.includes(fileBasename.toLowerCase().replace(/\.\w+$/, ""))) {
+        relatedFeatures.push(f);
+      }
     }
   }
+  contextBlock = buildCodingReminderBlock(
+    activeFeature,
+    filePath,
+    relatedFeatures.slice(0, 3)
+  );
+} else {
+  contextBlock = buildNoFeatureWarningBlock(filePath);
 }
-var contextBlock = buildCodingReminderBlock(
-  activeFeature,
-  filePath,
-  relatedFeatures.slice(0, 3)
-);
 if (contextBlock) {
   console.log(
     JSON.stringify({

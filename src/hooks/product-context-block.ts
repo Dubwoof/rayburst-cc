@@ -56,11 +56,10 @@ export function buildProductContextBlock(features: Feature[], cards: Card[]): st
   return `<rayburst_product_context>
   <rules>
     <rule>You have access to a Rayburst feature atlas — a knowledge graph of product features with Gherkin acceptance criteria. Use it to understand what you're building.</rule>
-    <rule>Before implementing any task, check if a matching feature exists in the atlas below. If found, read its criteria with rb_get_feature and work against them.</rule>
+    <rule>MANDATORY PRE-IMPLEMENTATION STEP: Before writing ANY code — regardless of task size, type, or complexity (including visual changes, icon swaps, layout tweaks, styling, refactoring) — you MUST: (1) call rb_list_features to search for a matching feature, (2) call rb_get_feature to load its criteria, (3) work against those criteria. There are NO exceptions. If no feature exists, create one with rb_create_feature before proceeding.</rule>
     <rule>If your changes may affect behaviors described in OTHER features' criteria, flag this to the user before proceeding.</rule>
     <rule>NEVER create, update, or delete features or criteria in the atlas without explicitly asking the user for confirmation first. Show them what you want to change and wait for approval.</rule>
-    <rule>When implementation is complete, summarize which acceptance criteria were addressed and which remain pending.</rule>
-    <rule>MANDATORY: After every implementation — in the same response as the code changes — you MUST update Rayburst without being asked: (1) update affected feature descriptions if behavior changed via rb_update_feature, (2) add new acceptance criteria for every new behavior introduced via rb_add_criterion, (3) update criterion status where applicable via rb_update_criterion. Do NOT wait for the user to ask. Skipping this step is a workflow violation.</rule>
+    <rule>MANDATORY POST-IMPLEMENTATION STEP: After every implementation — in the same response as the code changes — you MUST update Rayburst without being asked: (1) update affected feature descriptions if behavior changed via rb_update_feature, (2) add new acceptance criteria for every new behavior introduced via rb_add_criterion, (3) update criterion status where applicable via rb_update_criterion. Do NOT wait for the user to ask. A post-write hook will verify compliance.</rule>
     <rule>Use mcp__plugin_rayburst_rayburst__rb_* MCP tools to interact with the atlas. Use rb_get_feature to load full criteria for a specific feature.</rule>
   </rules>
 
@@ -130,6 +129,21 @@ ${criteria}
   <file>${escapeXml(filePath || "unknown")}</file>${relatedNote}
   <post_implementation_required>Before submitting your response, you MUST update the Rayburst feature atlas: add/update criteria for any new behaviors via rb_add_criterion, update the feature description if it changed via rb_update_feature. You will be reminded again after writing. Do NOT skip this step.</post_implementation_required>
 </rayburst_coding_reminder>`;
+}
+
+/**
+ * Build a warning block when no feature was matched but code is being written.
+ * Reminds the assistant to search the atlas before proceeding.
+ */
+export function buildNoFeatureWarningBlock(filePath: string): string {
+  return `<rayburst_no_feature_warning>
+  <warning>You are about to modify ${escapeXml(filePath || "a file")} but NO feature from the Rayburst atlas was matched to your current task. This means you skipped the mandatory feature lookup step.</warning>
+  <required_action>BEFORE writing this code, you MUST:
+    1. Call rb_list_features with a search term related to the area you are changing
+    2. Call rb_get_feature on the best match to load its acceptance criteria
+    3. Work against those criteria
+  ALL changes — including visual, layout, icon, and styling changes — require a feature lookup. There are no exceptions.</required_action>
+</rayburst_no_feature_warning>`;
 }
 
 function escapeXml(str: string): string {

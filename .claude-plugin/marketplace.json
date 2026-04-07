@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Always-on product context for Claude Code — features, acceptance criteria, and board cards injected automatically.",
-    "version": "3.1.6"
+    "version": "3.1.7"
   },
   "plugins": [
     {
       "name": "rayburst",
       "source": "./",
       "description": "Always-on product context for Claude Code. Automatically injects your Rayburst Product Requirement Registry (features, Gherkin acceptance criteria, board cards) into every coding session.",
-      "version": "3.1.6",
+      "version": "3.1.7",
       "author": {
         "name": "Rayburst"
       },
