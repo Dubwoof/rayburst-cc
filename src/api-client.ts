@@ -137,14 +137,16 @@ export class RayburstApiClient {
   }
 }
 
+import { readFileSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
+
 /**
  * Read API key from .claude/rb-config.md in the project directory.
+ * Called on every tool invocation (not cached) so it picks up
+ * config written by /rb:init mid-session.
  */
 function readApiKeyFromConfig(): string | null {
   try {
-    const { readFileSync, existsSync } = require("node:fs");
-    const { resolve } = require("node:path");
-
     const projectDir =
       process.env.CLAUDE_PROJECT_DIR || process.cwd();
     const configPath = resolve(projectDir, ".claude", "rb-config.md");
@@ -160,12 +162,35 @@ function readApiKeyFromConfig(): string | null {
 }
 
 /**
- * Create a client from config file or environment variables.
+ * Read API URL from .claude/rb-config.md.
+ */
+function readApiUrlFromConfig(): string | null {
+  try {
+    const projectDir =
+      process.env.CLAUDE_PROJECT_DIR || process.cwd();
+    const configPath = resolve(projectDir, ".claude", "rb-config.md");
+
+    if (!existsSync(configPath)) return null;
+
+    const content = readFileSync(configPath, "utf-8");
+    const match = content.match(/-\s*API URL:\s*(.+)/i);
+    return match ? match[1].trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Create a client by reading config on every call.
+ * Re-reads rb-config.md each time so /rb:init works mid-session.
  * Priority: env var > rb-config.md
  */
 export function createClientFromEnv(): RayburstApiClient {
   const apiKey = process.env.RAYBURST_API_KEY || readApiKeyFromConfig();
-  const apiUrl = process.env.RAYBURST_API_URL ?? "https://api.rayburst.app/api/v1/mcp";
+  const apiUrl =
+    process.env.RAYBURST_API_URL ||
+    readApiUrlFromConfig() ||
+    "https://api.rayburst.app/api/v1/mcp";
   const agentId = process.env.RAYBURST_AGENT_ID;
 
   if (!apiKey) {

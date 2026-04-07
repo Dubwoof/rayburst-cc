@@ -12,24 +12,16 @@ import { registerCommentTools } from "./tools/comments.js";
 
 const server = new McpServer({
   name: "rayburst",
-  version: "2.0.0",
+  version: "3.0.3",
 });
 
-let client: ReturnType<typeof createClientFromEnv> | null = null;
-
-function getClient() {
-  if (!client) {
-    client = createClientFromEnv();
-  }
-  return client;
-}
-
-// Register all tools with lazy client initialization.
-// The client is created on first tool call, not at startup,
-// so the server can start even if RAYBURST_API_KEY is not yet set.
+// Proxy that creates a fresh client on every property access.
+// This re-reads rb-config.md each time, so /rb:init works mid-session
+// without restarting. No caching — the config file read is fast (<1ms).
 const lazyClient = new Proxy({} as ReturnType<typeof createClientFromEnv>, {
   get(_target, prop) {
-    return (getClient() as unknown as Record<string | symbol, unknown>)[prop];
+    const client = createClientFromEnv();
+    return (client as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
