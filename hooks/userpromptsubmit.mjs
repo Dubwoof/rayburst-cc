@@ -306,7 +306,7 @@ ${criteria}
   });
   return `<rayburst_active_feature>
 ${featureBlocks.join("\n")}
-  <guidance>Work against these acceptance criteria. When done, you MUST in the same response: (1) call rb_update_criterion or rb_add_criterion to reflect what was built, (2) call rb_update_feature if the description needs updating, (3) summarize which criteria your changes address and which remain. Do NOT wait for the user to ask.</guidance>
+  <guidance>Work against these acceptance criteria. You will be required to update the Rayburst feature atlas immediately after writing code \u2014 a post-write reminder will enforce this. (1) call rb_update_criterion or rb_add_criterion to reflect what was built, (2) call rb_update_feature if the description needs updating, (3) summarize which criteria your changes address and which remain.</guidance>
 </rayburst_active_feature>`;
 }
 function escapeXml(str) {

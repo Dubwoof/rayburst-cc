@@ -21,6 +21,7 @@ const HOOK_ENTRIES = [
   { src: "src/hooks/sessionstart.ts",      out: "hooks/sessionstart.mjs" },
   { src: "src/hooks/userpromptsubmit.ts",  out: "hooks/userpromptsubmit.mjs" },
   { src: "src/hooks/pretooluse.ts",         out: "hooks/pretooluse.mjs" },
+  { src: "src/hooks/posttooluse.ts",        out: "hooks/posttooluse.mjs" },
   // product-context-block and rb-cache are internal modules — they are
   // bundled into the entry points above, not compiled as standalone files.
 ];

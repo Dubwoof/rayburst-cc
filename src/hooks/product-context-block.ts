@@ -96,7 +96,7 @@ ${criteria}
 
   return `<rayburst_active_feature>
 ${featureBlocks.join("\n")}
-  <guidance>Work against these acceptance criteria. When done, you MUST in the same response: (1) call rb_update_criterion or rb_add_criterion to reflect what was built, (2) call rb_update_feature if the description needs updating, (3) summarize which criteria your changes address and which remain. Do NOT wait for the user to ask.</guidance>
+  <guidance>Work against these acceptance criteria. You will be required to update the Rayburst feature atlas immediately after writing code — a post-write reminder will enforce this. (1) call rb_update_criterion or rb_add_criterion to reflect what was built, (2) call rb_update_feature if the description needs updating, (3) summarize which criteria your changes address and which remain.</guidance>
 </rayburst_active_feature>`;
 }
 
@@ -128,7 +128,7 @@ export function buildCodingReminderBlock(
 ${criteria}
   </criteria_checklist>
   <file>${escapeXml(filePath || "unknown")}</file>${relatedNote}
-  <post_implementation_required>After writing this code, you MUST update Rayburst in the same response: add/update criteria for any new behaviors via rb_add_criterion, update the feature description if it changed via rb_update_feature. Do NOT skip this step.</post_implementation_required>
+  <post_implementation_required>Before submitting your response, you MUST update the Rayburst feature atlas: add/update criteria for any new behaviors via rb_add_criterion, update the feature description if it changed via rb_update_feature. You will be reminded again after writing. Do NOT skip this step.</post_implementation_required>
 </rayburst_coding_reminder>`;
 }
 

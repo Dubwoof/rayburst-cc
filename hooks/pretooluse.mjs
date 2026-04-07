@@ -39,7 +39,7 @@ function buildCodingReminderBlock(activeFeature2, filePath2, relatedFeatures2) {
 ${criteria}
   </criteria_checklist>
   <file>${escapeXml(filePath2 || "unknown")}</file>${relatedNote}
-  <post_implementation_required>After writing this code, you MUST update Rayburst in the same response: add/update criteria for any new behaviors via rb_add_criterion, update the feature description if it changed via rb_update_feature. Do NOT skip this step.</post_implementation_required>
+  <post_implementation_required>Before submitting your response, you MUST update the Rayburst feature atlas: add/update criteria for any new behaviors via rb_add_criterion, update the feature description if it changed via rb_update_feature. You will be reminded again after writing. Do NOT skip this step.</post_implementation_required>
 </rayburst_coding_reminder>`;
 }
 function escapeXml(str) {
