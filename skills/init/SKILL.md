@@ -1,14 +1,14 @@
 ---
 name: rb:init
 description: |
-  Initialize Rayburst project config — set API key, board, and user credentials.
+  Initialize Rayburst project config — set API key, select projects and board.
   Triggers: "rb init", "setup rayburst", "configure rayburst", "connect to rayburst".
 user-invocable: true
 ---
 
 # rb:init — Project Config Setup
 
-Initialize `.claude/rb-config.md` with API connection details, project selection, board selection, and user credentials. The plugin's MCP server and hooks read this file automatically.
+Initialize `.claude/rb-config.md` with API connection details, project selection, and board selection. The plugin's MCP server and hooks read this file automatically.
 
 ## MCP Tool Prefix
 
@@ -142,35 +142,7 @@ Store the selected `board_id` and `board_slug`.
 
 ---
 
-### Step 6: Collect Users (loop)
-
-Initialize an empty `users` list.
-
-**For each user, ask in sequence using AskUserQuestion:**
-
-**6a.** Ask: `User <N> — Username or email:`
-
-**STOP and wait for response.**
-
-**6b.** Ask: `User <N> — Password (or $ENV_VAR_NAME to reference an env variable):`
-
-If input starts with `$`, store as-is. Otherwise store literal.
-
-**STOP and wait for response.**
-
-**6c.** Ask: `User <N> — Description (e.g. Admin, Viewer, Editor) [User <N>]:`
-
-**STOP and wait for response.**
-
-**6d.** Ask: `Add another user? (yes / no) [no]:`
-
-**STOP and wait for response.**
-
-At minimum one user required.
-
----
-
-### Step 7: Write Full Config
+### Step 6: Write Full Config
 
 Write the complete `.claude/rb-config.md` (overwriting the minimal one from Step 3):
 
@@ -188,28 +160,20 @@ Write the complete `.claude/rb-config.md` (overwriting the minimal one from Step
 ## Board
 - ID: <board_id>
 - Slug: <board_slug>
-
-## Users
-
-### <description_1>
-- username: <username_1>
-- password: <password_1>
-- description: <description_1>
 ```
 
 **Important:** Add `.claude/rb-config.md` to `.gitignore` since it contains the API key.
 
 ---
 
-### Step 8: Confirmation Summary
+### Step 7: Confirmation Summary
 
 ```
 Config saved to .claude/rb-config.md
 
   API Key     : <first 12 chars>...
-  Board       : <board_slug> (<board_id>)
   Projects    : <N> project(s) selected
-  Users       : <N> user(s) configured
+  Board       : <board_slug> (<board_id>)
 
 Rayburst is now active. On your next session, Claude will automatically
 have your feature atlas and board context. No commands needed — just code.
@@ -219,8 +183,6 @@ have your feature atlas and board context. No commands needed — just code.
 
 ## Constraints
 
-- **Never resolve env vars at write time** — store `$VAR_NAME` literally
-- **At least one user required**
 - **`.claude/` directory must exist** — create with `mkdir -p .claude` before writing
 - **Write minimal config before pinging** — the MCP server reads from rb-config.md, not env vars
 - **One question per turn** — never batch multiple prompts in a single message
