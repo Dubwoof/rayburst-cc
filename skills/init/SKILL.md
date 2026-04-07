@@ -102,29 +102,7 @@ Store as `project_url`.
 
 ---
 
-### Step 5: Select Board
-
-List available boards:
-
-```
-mcp__plugin_rayburst_rayburst__rb_list_boards()
-```
-
-Display them numbered and ask the user to pick:
-
-```
-Available boards:
-  1. Rayburst MVP (23578fa2-...)
-  2. Rayburst Business (e07dae77-...)
-
-Select a board number:
-```
-
-Store the selected `board_id` and `board_slug`.
-
----
-
-### Step 6: Select Projects
+### Step 5: Select Projects
 
 List available projects in the organization:
 
@@ -145,6 +123,28 @@ e.g. 1,2
 ```
 
 Store selected project IDs and names as `projects` list. If only one is selected, store it. If multiple, store all.
+
+---
+
+### Step 6: Select Board
+
+List available boards:
+
+```
+mcp__plugin_rayburst_rayburst__rb_list_boards()
+```
+
+Display them numbered and ask the user to pick:
+
+```
+Available boards:
+  1. Rayburst MVP (23578fa2-...)
+  2. Rayburst Business (e07dae77-...)
+
+Select a board number:
+```
+
+Store the selected `board_id` and `board_slug`.
 
 ---
 
@@ -194,13 +194,13 @@ Write the complete `.claude/rb-config.md` (overwriting the minimal one from Step
 ## Project URL
 <project_url>
 
-## Board
-- ID: <board_id>
-- Slug: <board_slug>
-
 ## Projects
 - <project_name_1>: <project_id_1>
 - <project_name_2>: <project_id_2>
+
+## Board
+- ID: <board_id>
+- Slug: <board_slug>
 
 ## Users
 
