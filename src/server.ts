@@ -12,7 +12,7 @@ import { registerCommentTools } from "./tools/comments.js";
 
 const server = new McpServer({
   name: "rayburst",
-  version: "3.0.3",
+  version: "3.1.0",
 });
 
 // Proxy that creates a fresh client on every property access.

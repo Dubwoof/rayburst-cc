@@ -12,6 +12,19 @@ const cardStatusEnum = z.enum([
 
 export function registerBoardTools(server: McpServer, client: RayburstApiClient) {
   server.tool(
+    "rb_list_projects",
+    "List all projects in the organization",
+    {
+      search: z.string().optional().describe("Search by project name or description"),
+      limit: z.number().int().min(1).max(100).optional().describe("Max results (default 50)"),
+    },
+    async (args) => {
+      const result = await client.call("list_projects", args);
+      return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+    }
+  );
+
+  server.tool(
     "rb_list_boards",
     "List all boards in the organization",
     {},

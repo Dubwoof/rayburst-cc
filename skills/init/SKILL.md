@@ -124,17 +124,27 @@ Store the selected `board_id` and `board_slug`.
 
 ---
 
-### Step 6: Identify Projects
+### Step 6: Select Projects
 
-Ask the user which projects this workspace maps to. Show any projects associated with the selected board if available, or ask:
+List available projects in the organization:
 
 ```
-Project IDs
-Enter the frontend project ID (or press Enter to skip):
-Enter the backend project ID (or press Enter to skip):
+mcp__plugin_rayburst_rayburst__rb_list_projects()
 ```
 
-Store as `frontend_project_id` and `backend_project_id`.
+Display them numbered and let the user pick one or more:
+
+```
+Available projects:
+  1. Rayburst Frontend (231165df-...) — local
+  2. Rayburst API (7805dae1-...) — github
+  3. Marketing Site (a1b2c3d4-...) — manual
+
+Select project(s) for this workspace (comma-separated numbers, or Enter to skip):
+e.g. 1,2
+```
+
+Store selected project IDs and names as `projects` list. If only one is selected, store it. If multiple, store all.
 
 ---
 
@@ -189,8 +199,8 @@ Write the complete `.claude/rb-config.md` (overwriting the minimal one from Step
 - Slug: <board_slug>
 
 ## Projects
-- Frontend: <frontend_project_id>
-- Backend: <backend_project_id>
+- <project_name_1>: <project_id_1>
+- <project_name_2>: <project_id_2>
 
 ## Users
 
@@ -212,7 +222,7 @@ Config saved to .claude/rb-config.md
   API Key     : <first 12 chars>...
   Project URL : <project_url>
   Board       : <board_slug> (<board_id>)
-  Projects    : Frontend: <id>, Backend: <id>
+  Projects    : <N> project(s) selected
   Users       : <N> user(s) configured
 
 Rayburst is now active. On your next session, Claude will automatically
