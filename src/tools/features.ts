@@ -68,9 +68,10 @@ export function registerFeatureTools(server: McpServer, client: RayburstApiClien
 
   server.tool(
     "rb_delete_feature",
-    "Delete a feature permanently",
+    "Delete a feature. With destructive permission tier, deletes immediately. With write permission tier, submits a deletion request for user approval on the Feature Detail page.",
     {
       featureId: z.string().describe("Feature UUID"),
+      reason: z.string().optional().describe("Optional reason for the deletion request"),
     },
     async (args) => {
       const result = await client.call("delete_feature", args);
