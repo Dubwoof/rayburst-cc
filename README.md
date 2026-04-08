@@ -8,6 +8,20 @@
   <img src="claude_code_x_rayburst_prr.png" alt="Claude Code x Rayburst Product Requirement Registry" width="100%">
 </p>
 
+## Install
+
+```bash
+claude plugin add Dubwoof/rayburst-cc
+```
+
+Restart Claude Code, then run `/rb:init`. The setup wizard walks you through three steps:
+
+1. **Paste your API key** — grab one from [rayburst.app/profile](https://www.rayburst.app/profile?tab=mcp-agents)
+2. **Pick your projects** — the wizard lists your org's projects, just select by number
+3. **Pick a board** — same thing, select from the list
+
+That's it — every session now has your product context automatically.
+
 ## The Problem
 
 You're building a feature. Claude Code writes the code, but has no idea what the feature is supposed to do. It doesn't know the acceptance criteria. It doesn't know which board card it's working on. Every conversation starts from zero — you re-explain the requirements, the edge cases, the definition of done.
@@ -89,31 +103,6 @@ The server uses a lazy client pattern — it doesn't connect to the API at start
 | **Tags** | `rb_list_tags`, `rb_create_tag` | Manage org-wide tags (18 color options) used to categorize features and criteria. |
 
 Claude decides when to call these tools based on the rules injected by the SessionStart hook. The user never needs to invoke them manually.
-
-## Install
-
-**Prerequisites:** Claude Code v1.0.33+ and a [Rayburst](https://rayburst.app) account with an API key.
-
-```bash
-claude plugin add Dubwoof/rayburst-cc
-```
-
-Restart Claude Code, then run the one-time setup:
-
-```
-/rb:init
-```
-
-This prompts for:
-- **Rayburst API key** — get one at [https://www.rayburst.app/profile?tab=mcp-agents](https://www.rayburst.app/profile?tab=mcp-agents) (starts with `rb_user_`)
-- **Project URL** — the base URL of your running app (e.g. `http://localhost:3000`)
-- **Board** — picks from your org's boards via the API
-- **Project IDs** — frontend and backend project UUIDs
-- **User credentials** — username/password for browser-based validation (passwords can reference env vars with `$VAR_NAME`)
-
-Config is saved to `.claude/rb-config.md`. **Add this to `.gitignore`** — it contains your API key.
-
-That's it. Every Claude Code session in this project now has product context automatically.
 
 ## How a Session Looks
 
