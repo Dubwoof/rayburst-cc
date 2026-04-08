@@ -185,12 +185,14 @@ ${cardLines}
 }
 function buildEmptyAtlasBlock() {
   return `<rayburst_empty_atlas>
-  <warning>The Rayburst feature atlas is EMPTY \u2014 no product features have been defined yet.</warning>
-  <required_action>You MUST NOT write or edit any code this session until you have created at least one feature in the atlas.
-    1. Ask the user what feature or behavior you are about to implement
-    2. Call rb_create_feature to register it (with user confirmation first)
-    3. Add acceptance criteria via rb_add_criterion
-    4. Only then proceed with implementation
+  <warning>The Rayburst feature atlas appears EMPTY \u2014 the session-start fetch returned no features. This may mean no features exist yet, OR that a config/API issue prevented loading them.</warning>
+  <required_action>You MUST NOT write or edit any code this session until you have verified the atlas and registered the feature you are implementing.
+    1. Call rb_list_features (with an empty or broad search term) to verify the atlas is truly empty \u2014 do NOT skip this step even if the summary says 0 features
+    2. If features exist, call rb_get_feature on the best match and work against its criteria
+    3. If the atlas is genuinely empty, ask the user what feature or behavior you are about to implement
+    4. Call rb_create_feature to register it (with user confirmation first)
+    5. Add acceptance criteria via rb_add_criterion
+    6. Only then proceed with implementation
   This applies to ALL changes \u2014 bug fixes, refactors, visual tweaks, and new features alike. There are no exceptions.</required_action>
 </rayburst_empty_atlas>`;
 }

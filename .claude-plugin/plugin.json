@@ -1,6 +1,6 @@
 {
   "name": "rayburst",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Always-on product context for Claude Code. Automatically injects feature atlas and acceptance criteria into every coding session — no slash commands needed.",
   "author": {
     "name": "Rayburst",
