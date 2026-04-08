@@ -46,9 +46,9 @@ function buildNoFeatureWarningBlock(filePath2) {
   return `<rayburst_no_feature_warning>
   <warning>You are about to modify ${escapeXml(filePath2 || "a file")} but NO feature from the Rayburst atlas was matched to your current task. This means you skipped the mandatory feature lookup step.</warning>
   <required_action>BEFORE writing this code, you MUST:
-    1. Call rb_list_features with a search term related to the area you are changing
+    1. Call rb_list_features to find an existing feature that covers the area you are changing \u2014 ALWAYS prefer adding criteria to existing features over creating new ones
     2. Call rb_get_feature on the best match to load its acceptance criteria
-    3. Work against those criteria
+    3. Work against those criteria \u2014 write any new criteria in Gherkin format with Given/When/Then on separate lines
   ALL changes \u2014 including visual, layout, icon, and styling changes \u2014 require a feature lookup. There are no exceptions.</required_action>
 </rayburst_no_feature_warning>`;
 }

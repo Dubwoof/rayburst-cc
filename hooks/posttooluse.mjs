@@ -54,18 +54,19 @@ var contextBlock;
 if (activeFeature) {
   contextBlock = `<rayburst_post_implementation_reminder>
   <action_required>You just modified ${escapeXml(filePath)}. Before continuing to the next task or responding to the user, you MUST update the Rayburst feature atlas NOW:
-    1. Call rb_add_criterion for any new behaviors introduced
-    2. Call rb_update_criterion to mark criteria as passing/failing
-    3. Call rb_update_feature if the feature description needs updating
+    1. Search for an existing feature that covers this area via rb_list_features \u2014 add criteria there instead of creating a new feature
+    2. Call rb_add_criterion for new behaviors (Gherkin format: Given/When/Then on separate lines)
+    3. Call rb_update_criterion to mark criteria as passing/failing
+    4. Call rb_update_feature if the feature description needs updating
   Do NOT proceed without completing this step. This is a mandatory workflow requirement.</action_required>
   <active_feature>${escapeXml(activeFeature.title)} (${activeFeature.id})</active_feature>
 </rayburst_post_implementation_reminder>`;
 } else {
   contextBlock = `<rayburst_post_implementation_reminder>
   <action_required>You just modified ${escapeXml(filePath)} but NO active feature was matched for this task. This likely means you skipped the mandatory feature lookup step. You MUST now:
-    1. Call rb_list_features with a search term related to the area you just changed
+    1. Call rb_list_features to find an existing feature that covers this area \u2014 prefer adding criteria to existing features over creating new ones
     2. Call rb_get_feature on the best match to load its criteria
-    3. Call rb_add_criterion or rb_update_criterion to reflect what you built
+    3. Call rb_add_criterion to reflect what you built (Gherkin format: Given/When/Then on separate lines)
     4. Call rb_update_feature if the feature description needs updating
   ALL changes \u2014 including visual, layout, and icon changes \u2014 require feature atlas updates. Do NOT skip this.</action_required>
 </rayburst_post_implementation_reminder>`;

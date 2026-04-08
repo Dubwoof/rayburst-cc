@@ -57,9 +57,16 @@ export function buildProductContextBlock(features: Feature[], cards: Card[]): st
   <rules>
     <rule>You have access to a Rayburst feature atlas — a knowledge graph of product features with Gherkin acceptance criteria. Use it to understand what you're building.</rule>
     <rule>MANDATORY PRE-IMPLEMENTATION STEP: Before writing ANY code — regardless of task size, type, or complexity (including visual changes, icon swaps, layout tweaks, styling, refactoring) — you MUST: (1) call rb_list_features to search for a matching feature, (2) call rb_get_feature to load its criteria, (3) work against those criteria. There are NO exceptions. If no feature exists, create one with rb_create_feature before proceeding.</rule>
+    <rule>PREFER EXISTING FEATURES: When adding criteria, ALWAYS search for an existing feature first via rb_list_features. Add criteria to the best-matching existing feature rather than creating a new one. Only create a new feature when no existing feature covers the UI area or capability.</rule>
+    <rule>FEATURE NAMING: Feature titles MUST be short, user-friendly UI area names like "Header", "Poster Slider", "Settings Page", "Login Screen", "Featured Row". NEVER use requirement descriptions as titles (e.g. NOT "Implement dark mode toggle on settings page").</rule>
+    <rule>GHERKIN FORMAT: All criteria descriptions MUST use Gherkin syntax with Given, When, Then each on a NEW LINE. Example:
+Given the user is on the home screen
+When they tap the favorites button
+Then the favorites filter is applied</rule>
+    <rule>TAGS: Every feature MUST have at least one tag assigned. Use rb_list_tags to see available tags, or rb_create_tag if needed. Assign tags via the feature's tagIds when creating or updating.</rule>
     <rule>If your changes may affect behaviors described in OTHER features' criteria, flag this to the user before proceeding.</rule>
     <rule>NEVER create, update, or delete features or criteria in the atlas without explicitly asking the user for confirmation first. Show them what you want to change and wait for approval.</rule>
-    <rule>MANDATORY POST-IMPLEMENTATION STEP: After every implementation — in the same response as the code changes — you MUST update Rayburst without being asked: (1) update affected feature descriptions if behavior changed via rb_update_feature, (2) add new acceptance criteria for every new behavior introduced via rb_add_criterion, (3) update criterion status where applicable via rb_update_criterion. Do NOT wait for the user to ask. A post-write hook will verify compliance.</rule>
+    <rule>MANDATORY POST-IMPLEMENTATION STEP: After every implementation — in the same response as the code changes — you MUST update Rayburst without being asked: (1) update affected feature descriptions if behavior changed via rb_update_feature, (2) add new acceptance criteria for every new behavior introduced via rb_add_criterion (Gherkin format, Given/When/Then on separate lines), (3) update criterion status where applicable via rb_update_criterion. Do NOT wait for the user to ask. A post-write hook will verify compliance.</rule>
     <rule>Use mcp__plugin_rayburst_rayburst__rb_* MCP tools to interact with the atlas. Use rb_get_feature to load full criteria for a specific feature.</rule>
   </rules>
 
@@ -95,7 +102,7 @@ ${criteria}
 
   return `<rayburst_active_feature>
 ${featureBlocks.join("\n")}
-  <guidance>Work against these acceptance criteria. You will be required to update the Rayburst feature atlas immediately after writing code — a post-write reminder will enforce this. (1) call rb_update_criterion or rb_add_criterion to reflect what was built, (2) call rb_update_feature if the description needs updating, (3) summarize which criteria your changes address and which remain.</guidance>
+  <guidance>Work against these acceptance criteria. You will be required to update the Rayburst feature atlas immediately after writing code — a post-write reminder will enforce this. (1) call rb_update_criterion or rb_add_criterion to reflect what was built — write criteria in Gherkin format with Given/When/Then each on a new line, (2) call rb_update_feature if the description needs updating, (3) summarize which criteria your changes address and which remain. ALWAYS add criteria to existing features rather than creating new ones.</guidance>
 </rayburst_active_feature>`;
 }
 
@@ -139,9 +146,9 @@ export function buildNoFeatureWarningBlock(filePath: string): string {
   return `<rayburst_no_feature_warning>
   <warning>You are about to modify ${escapeXml(filePath || "a file")} but NO feature from the Rayburst atlas was matched to your current task. This means you skipped the mandatory feature lookup step.</warning>
   <required_action>BEFORE writing this code, you MUST:
-    1. Call rb_list_features with a search term related to the area you are changing
+    1. Call rb_list_features to find an existing feature that covers the area you are changing — ALWAYS prefer adding criteria to existing features over creating new ones
     2. Call rb_get_feature on the best match to load its acceptance criteria
-    3. Work against those criteria
+    3. Work against those criteria — write any new criteria in Gherkin format with Given/When/Then on separate lines
   ALL changes — including visual, layout, icon, and styling changes — require a feature lookup. There are no exceptions.</required_action>
 </rayburst_no_feature_warning>`;
 }
@@ -157,9 +164,10 @@ export function buildEmptyAtlasBlock(): string {
     1. Call rb_list_features (with an empty or broad search term) to verify the atlas is truly empty — do NOT skip this step even if the summary says 0 features
     2. If features exist, call rb_get_feature on the best match and work against its criteria
     3. If the atlas is genuinely empty, ask the user what feature or behavior you are about to implement
-    4. Call rb_create_feature to register it (with user confirmation first)
-    5. Add acceptance criteria via rb_add_criterion
-    6. Only then proceed with implementation
+    4. Call rb_create_feature with a short, user-friendly UI area name (e.g. "Header", "Settings Page" — NOT a requirement description)
+    5. Add acceptance criteria via rb_add_criterion in Gherkin format with Given/When/Then on separate lines
+    6. Assign at least one tag via rb_list_tags / rb_create_tag
+    7. Only then proceed with implementation
   This applies to ALL changes — bug fixes, refactors, visual tweaks, and new features alike. There are no exceptions.</required_action>
 </rayburst_empty_atlas>`;
 }

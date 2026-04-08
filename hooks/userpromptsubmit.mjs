@@ -324,7 +324,7 @@ ${criteria}
   });
   return `<rayburst_active_feature>
 ${featureBlocks.join("\n")}
-  <guidance>Work against these acceptance criteria. You will be required to update the Rayburst feature atlas immediately after writing code \u2014 a post-write reminder will enforce this. (1) call rb_update_criterion or rb_add_criterion to reflect what was built, (2) call rb_update_feature if the description needs updating, (3) summarize which criteria your changes address and which remain.</guidance>
+  <guidance>Work against these acceptance criteria. You will be required to update the Rayburst feature atlas immediately after writing code \u2014 a post-write reminder will enforce this. (1) call rb_update_criterion or rb_add_criterion to reflect what was built \u2014 write criteria in Gherkin format with Given/When/Then each on a new line, (2) call rb_update_feature if the description needs updating, (3) summarize which criteria your changes address and which remain. ALWAYS add criteria to existing features rather than creating new ones.</guidance>
 </rayburst_active_feature>`;
 }
 function escapeXml(str) {
