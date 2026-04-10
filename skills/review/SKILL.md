@@ -24,7 +24,7 @@ All MCP tools use: `mcp__plugin_rayburst_rayburst__`
 1. **One change per AskUserQuestion prompt** — never batch multiple proposals together.
 2. **Never apply a change without user approval** — every write, update, or delete requires an explicit "Apply" answer.
 3. **Never delete a feature or criterion** that the user skips — move immediately to the next proposal.
-4. **Present proposals in this order**: deletions first (highest impact), then updates, then additions.
+4. **Present proposals in this order**: deletions first (highest impact), then updates, then additions, then visual migrations (🎨 MIGRATE) last.
 
 ---
 
@@ -35,6 +35,7 @@ All MCP tools use: `mcp__plugin_rayburst_rayburst__`
 | 🗑️     | DELETE (red)     | Removing a feature or criterion              |
 | ✏️     | UPDATE (yellow)  | Changing description, title, or status       |
 | ➕     | ADD (green)      | Adding a new criterion to an existing feature|
+| 🎨     | MIGRATE (purple) | Visual criterion that belongs in Designs     |
 | ℹ️     | INFO (blue)      | Context shown to the user, no action needed  |
 
 Always prefix the AskUserQuestion `question` text with the relevant icon and a short action label in CAPS, e.g.:
@@ -140,6 +141,22 @@ NEW CRITERION:
 Reason: <one-line explanation of the behavior being captured>
 ```
 
+**🎨 MIGRATE — Visual criterion (belongs in Designs)**
+A criterion that describes appearance rather than behavior — e.g. it mentions colors, spacing,
+font sizes, border radii, shadows, animation durations, or layout measurements.
+These belong in feature Designs (TOON-encoded snapshots), not acceptance criteria.
+Propose deleting the criterion and remind the user to run /rb:capture-design to capture the
+appearance instead.
+
+*Preview format:*
+```
+Feature: "<title>"
+Criterion (visual — should be a Design):
+  "<criterion description>"
+
+Reason: Describes appearance, not behavior. Run /rb:capture-design to capture the visual design.
+```
+
 ---
 
 ### Step 3: Present Changes One at a Time
@@ -162,7 +179,8 @@ For each item in the change queue, call **AskUserQuestion** with:
 
 - If **Apply** → execute the appropriate MCP call (`rb_update_feature`, `rb_update_criterion`,
   `rb_add_criterion`, `rb_delete_criterion`, `rb_delete_feature`) and confirm success with a
-  one-line acknowledgement before presenting the next change.
+  one-line acknowledgement before presenting the next change. For 🎨 MIGRATE proposals, use
+  `rb_delete_criterion` and remind the user to run /rb:capture-design.
 - If **Skip** → acknowledge with a one-line "Skipped." and immediately present the next change.
 
 ---
