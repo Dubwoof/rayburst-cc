@@ -10,6 +10,7 @@ import { registerValidationTools } from "./tools/validation.js";
 import { registerTagTools } from "./tools/tags.js";
 import { registerCommentTools } from "./tools/comments.js";
 import { registerVersionTools } from "./tools/version.js";
+import { registerDesignTools } from "./tools/designs.js";
 
 const server = new McpServer({
   name: "rayburst",
@@ -35,6 +36,7 @@ registerValidationTools(server, lazyClient);
 registerTagTools(server, lazyClient);
 registerCommentTools(server, lazyClient);
 registerVersionTools(server);
+registerDesignTools(server, lazyClient);
 
 // Graceful shutdown
 const cleanup = async () => {
