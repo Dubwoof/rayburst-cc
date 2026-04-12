@@ -102,6 +102,17 @@ toonContent:    <encoded TOON string>
 
 ---
 
+### Step 4.5: Link centralized design tokens
+
+After saving the design, automatically link any matching centralized tokens:
+
+1. Call `rb_list_design_tokens` to fetch all org-level design tokens.
+2. For each centralized token, check if its `value` appears anywhere in the design's `cssProperties` or `designTokens`.
+3. For each match, call `rb_link_design_token` with the `designId`, `tokenId`, and the matching `cssProperty` name.
+4. Track counts: how many existing tokens were linked, and how many repeated CSS values could become new tokens (values appearing in the design that aren't yet centralized).
+
+---
+
 ### Step 5: Confirm
 
 After successful creation, output:
@@ -109,6 +120,9 @@ After successful creation, output:
 ✅ Design captured: "<name>"
 Feature: <feature title> (<featureId>)
 Design ID: <designId>
+
+Linked N centralized tokens.
+M CSS values could become new design tokens — run /rb:extract-tokens to review.
 
 The design is now visible in the Designs tab of the feature.
 To update it later, run /rb:capture-design again or use rb_update_design.
